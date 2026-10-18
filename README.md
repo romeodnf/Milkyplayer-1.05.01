@@ -1,53 +1,74 @@
-# RPiGUS — Multichannel Audio for Amiga
+# Milkyplayer
+
+Port of Milkyplayer 1.05.01 for Amiga. MiniGL support. Software rendering version built, but needs optimizations. Supports AHI, AmiGUS and experimental Gravis Ultrasound emulation outputting sound over HDMI, running on a free Emu68 RPi4 core.
+
+Developed using ChatGPT/Codex.
 
 ## Overview
 
-RPiGUS is a native Raspberry Pi audio engine for PiStorm/Emu68, designed to provide a playback interface compatible with **amigus.library**. The aim is for MilkyPlay to use RPiGUS or physical AmiGUS hardware through the same application interface.
+Milkyplayer brings MilkyTracker’s editor and MilkyPlay playback engine to AmigaOS 3, with separate MiniGL and software rendering builds.
 
-The engine runs on Raspberry Pi 4 core 3 alongside Emu68, providing 32-channel sample playback and stereo output through the Pi’s audio connector.
+Audio options include standard AHI playback, direct AmiGUS support through `amigus.library`, and experimental Gravis Ultrasound emulation running on an unused Raspberry Pi 4 core alongside Emu68.
 
-As part of the project, the latest MilkyTracker is being ported to **AmigaOS 3**. MilkyTracker provides the editor, while MilkyPlay handles module sequencing and tracker effects and delegates sample playback to the audio engine. AHI support remains available for other Amiga audio hardware.
+The editor provides pattern, instrument and sample editing. MilkyPlay handles module sequencing and tracker effects, while the selected audio backend handles software mixing, hardware sample playback or emulated Gravis playback.
+
+## Requirements
+
+Runs on classic AmigaOS 3.x. **RTG required.**
+
+The MiniGL version requires a working MiniGL installation. A separate software rendering build is available but needs further optimization.
+
+The experimental Gravis Ultrasound emulation requires PiStorm with a Raspberry Pi 4 and currently needs a **custom-built Emu68 kernel**.
 
 ## Motivation and community
 
-The project began with a wish to bring the latest MilkyTracker to AmigaOS 3 and make use of the power PiStorm brings to the Amiga. That grew into the idea of running a dedicated 32-channel audio engine on a Raspberry Pi 4 core unused by Emu68.
+The project began with a wish to bring a recent version of MilkyTracker to AmigaOS 3 and make use of the power PiStorm brings to the Amiga. That grew into the idea of using a Raspberry Pi 4 core unused by Emu68 for dedicated multichannel audio processing.
 
-During research, I discovered the AmiGUS sound card and wanted to support it too. Since I do not own an AmiGUS card, implementing an amigus.library-compatible interface in RPiGUS offered a practical development path. MilkyPlay could then use one interface for both implementations, with physical AmiGUS support as a shared goal.
+During research, I discovered the AmiGUS sound card and wanted to support it too. Direct integration through `amigus.library` allows the project to support its sample playback hardware. Testing on physical AmiGUS cards will depend on contributions from people who own the hardware.
 
-The motivation comes from a love of the Amiga and its tracker community, along with fond memories of Gravis UltraSound and FastTracker. The ambition is to bring that kind of music-making experience to the Amiga while contributing useful work to the MilkyTracker, PiStorm, Emu68 and AmiGUS communities.
+The motivation comes from a love of the Amiga and its tracker community, along with fond memories of Gravis Ultrasound and FastTracker. The ambition is to bring that music-making experience to the Amiga while contributing useful work to the MilkyTracker, PiStorm, Emu68 and AmiGUS communities.
 
-RPiGUS is an independent project, developed with respect for these projects and their contributors.
+Milkyplayer is an independent project, developed with respect for these projects and their contributors.
 
 ## Goals
 
-1. Build a 32-channel audio engine on Raspberry Pi 4 core 3, with stereo output through the Pi audio connector.
-2. Provide an amigus.library-compatible playback interface usable by MilkyPlay with RPiGUS or physical AmiGUS hardware.
-3. Port the latest MilkyTracker to AmigaOS 3 and integrate that playback interface into MilkyPlay.
-4. Preserve tracker timing and musical behavior, including pitch, loops, panning, envelopes and retriggers.
-5. Retain AHI support, software playback and offline rendering.
-6. Keep the implementation maintainable and documented for community collaboration.
+1. Bring MilkyTracker’s editing and playback capabilities to AmigaOS 3.
+2. Provide separate MiniGL and software rendering versions.
+3. Support AHI and direct AmiGUS playback.
+4. Develop experimental Gravis Ultrasound emulation on a free Raspberry Pi 4 core alongside Emu68, outputting sound over HDMI.
+5. Preserve tracker timing and musical behavior, including pitch, loops, panning, envelopes and retriggers.
+6. Retain software audio playback and offline rendering.
+7. Keep the implementation maintainable and documented for community collaboration.
 
 ## Technical design
 
 ### Application and playback responsibilities
 
-MilkyTracker remains responsible for editing and user interaction. MilkyPlay interprets module data and calculates tracker effects, then sends sample and voice operations through the compatible playback interface.
+MilkyTracker provides editing and user interaction. MilkyPlay interprets module data and calculates tracker effects, then passes playback operations to the selected backend.
 
 | Component | Responsibility |
 | --- | --- |
-| MilkyTracker | Pattern, instrument and sample editing; playback controls and audition |
-| MilkyPlay | Sequencing, tracker effects, envelopes and voice commands |
-| amigus.library-compatible interface | Sample management, voice control and playback resources |
-| RPiGUS Amiga-side implementation | Transfer samples and commands to the ARM engine |
-| RPiGUS ARM engine | Sample resampling, volume control, mixing and stereo output |
-| Physical AmiGUS hardware | Sample playback through amigus.library |
-| AHI output path | Playback through other supported Amiga audio hardware |
+| Editor | Pattern, instrument and sample editing; playback controls and audition |
+| MilkyPlay | Module sequencing, tracker effects, envelopes and voice commands |
+| AmiGUS backend | Sample management and hardware voice control through `amigus.library` |
+| Gravis backend | Translate playback operations into commands for the emulated GF1 audio engine |
+| Raspberry Pi audio service | Execute emulation and audio processing alongside Emu68 |
+| AHI output path | Output software-mixed audio through supported Amiga audio hardware |
 
-SDL remains part of the MilkyTracker port for display and input. Software audio remains available for fallback and offline rendering.
+SDL remains part of the port for display and input. Software audio playback remains available through AHI and for offline rendering.
 
-### Library compatibility
+### Display versions
 
-The common interface covers the playback operations MilkyPlay needs:
+The project provides two separate rendering builds:
+
+- **MiniGL version:** presents the tracker interface through MiniGL.
+- **Software rendering version:** presents the interface without a MiniGL dependency. This version has been built but needs further optimization.
+
+The versions have separate executables and configuration files, allowing them to be tested independently.
+
+### AmiGUS integration
+
+The AmiGUS backend uses `amigus.library` for the playback operations MilkyPlay needs:
 
 - Upload, replace and release samples.
 - Start and stop voices.
@@ -56,31 +77,32 @@ The common interface covers the playback operations MilkyPlay needs:
 - Coordinate voice changes with tracker timing.
 - Allocate and release playback resources.
 
-Compatibility work focuses on the amigus.library behavior needed by these operations. Differences in voice capacity, sample formats and other capabilities must be handled by the integration.
+MilkyPlay retains sequencing and effect processing, while AmiGUS handles sample playback through its hardware voices. Integration must respect the card’s voice capacity, sample formats and playback capabilities.
 
-RPiGUS uses shared memory internally to communicate with the ARM engine. This transport stays behind the application-facing interface.
+Physical hardware testing remains an important part of validating this support.
 
-### Audio engine
+### Experimental Gravis Ultrasound emulation
 
-The ARM service maintains voice state and continuously generates stereo audio. Its initial feature targets are:
+The Gravis backend targets the GF1 sample playback engine, with separate Classic and MAX driver selections.
 
-- 32 independent mono sample voices.
-- Signed 8-bit and 16-bit samples.
-- Variable pitch and independent left/right gain.
-- One-shot playback, forward loops and prepared ping-pong loops.
-- Nearest-neighbor and linear interpolation.
-- Wide internal mixing precision with controlled output clipping.
-- Gain ramps for smoother transitions.
+The emulation runs on a free Raspberry Pi 4 core alongside Emu68, outputting sound over HDMI. It currently requires a custom-built Emu68 kernel. Its playback design covers:
 
-Tracker envelopes remain in MilkyPlay initially. Song playback and instrument audition share the available voice resources; additional RPiGUS preview voices may be considered after performance testing.
+- Multichannel sample playback.
+- Sample memory and voice registers.
+- Pitch, volume and panning.
+- Sample offsets, looping and playback direction.
+- Volume ramps and retrigger behavior.
+- GF1 rendering rates and conversion to the output rate.
 
-Pitch conversion preserves musical playback rates independently of each implementation’s internal clock and output rate.
+Gravis-specific playback changes are kept within the Gravis path. Other audio drivers retain normal MilkyTracker playback behavior.
+
+Matching the sound and timing of original FastTracker II and Gravis hardware remains a development goal; the emulation is experimental.
 
 ### Timing and communication
 
-RPiGUS schedules commands against its audio frame clock to keep playback timing independent of application scheduling. Related voice changes are applied together, with note retriggers distinguished from pitch and volume updates.
+The Amiga application transfers sample data and timed playback commands to the Raspberry Pi service through shared memory.
 
-The shared-memory protocol defines:
+The communication design covers:
 
 - Data layout, versioning, alignment and byte order.
 - Command queue ownership and synchronization.
@@ -88,20 +110,17 @@ The shared-memory protocol defines:
 - Sample ownership and acknowledgement before memory is reused.
 - Handling of underruns, queue overflow, shutdown and restart.
 
-Sample replacement must remain safe during playback and editing.
+Related voice changes must be applied together, with note retriggers distinguished from pitch and volume updates. Sample replacement must remain safe during playback and editing.
 
-## Development milestones
+## Testers wanted
 
-| Milestone | Deliverable |
-| --- | --- |
-| Native audio output | Stable stereo output from the core-3 service through the Pi4 audio connector |
-| Sample playback | Sample upload and timed control of playback, pitch, volume and loops |
-| Multichannel engine | 32-voice playback with measured processing cost and timing |
-| Library compatibility | An amigus.library-compatible interface backed by RPiGUS |
-| MilkyTracker integration | AmigaOS 3 port and MilkyPlay integration, retaining software playback |
-| Physical AmiGUS support | The same MilkyPlay integration verified on an AmiGUS card |
-| AHI support | Reliable playback and device/mode selection on supported hardware |
-| Editing and polish | Instrument audition, safe sample editing, module compatibility, documentation and packaging |
+Looking for AmiGUS owners to test hardware support, and musicians to test Milkyplayer’s editing and playback functionality.
+
+Interested in helping? **PM me on Discord: Axlv500 on the PiStorm server.**
+
+## Development
+
+Developed using ChatGPT/Codex, with testing on Amiga hardware guiding fixes and further development.
 
 ## Reference projects
 
