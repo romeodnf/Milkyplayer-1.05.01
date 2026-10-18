@@ -4,6 +4,10 @@ Port of Milkyplayer 1.05.01 for Amiga. MiniGL support. Software rendering versio
 
 Developed using ChatGPT/Codex.
 
+## Development status
+
+All functionality described in this README is implemented, but needs testing before a public release.
+
 ## Overview
 
 Milkyplayer brings MilkyTracker’s editor and MilkyPlay playback engine to AmigaOS 3, with separate MiniGL and software rendering builds.
