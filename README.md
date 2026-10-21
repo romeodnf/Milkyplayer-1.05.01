@@ -1,6 +1,6 @@
-# Milkyplayer
+# Milkytracker
 
-Port of Milkyplayer 1.05.01 for 68k AmigaOS 3.x. MiniGL support. Software rendering version built, but needs optimizations. Supports AHI, AmiGUS and experimental Gravis Ultrasound emulation outputting sound over HDMI, running on a free Emu68 RPi4 core.
+Port of MilkyTrackser 1.05.01 for 68k AmigaOS 3.x. MiniGL support. Software rendering version built, but needs optimizations. Supports AHI, AmiGUS and experimental Gravis Ultrasound emulation outputting sound over HDMI, running on a free Emu68 RPi4 core.
 
 Developed using ChatGPT/Codex.
 
